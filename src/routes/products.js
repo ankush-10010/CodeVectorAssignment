@@ -1,4 +1,4 @@
-const { Router, raw } = require('express');
+const { Router } = require('express');
 const pool = require('../db');
 const { encodeCursor, decodeCursor } = require('../utils/cursor');
 
