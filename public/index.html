@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>High-End Catalog Precision UI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-dim": "#131313",
+                        "surface": "#131313",
+                        "surface-container-low": "#1c1b1b",
+                        "surface-container-high": "#2a2a2a",
+                        "surface-container-highest": "#353534",
+                        "surface-container-lowest": "#0e0e0e",
+                        "outline-variant": "#444748",
+                        "primary": "#ffffff",
+                        "secondary": "#4edea3",
+                        "on-surface-variant": "#c4c7c8",
+                        "on-surface": "#e5e2e1"
+                    },
+                    spacing: {
+                        "container-max": "1440px",
+                        "gutter": "24px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "48px"
+                    },
+                    fontFamily: {
+                        "display-lg": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "label-sm": ["Inter"]
+                    }
+                }
+            }
+        };
+    </script>
+<style>
+        body { background-color: #000000; color: hsl(65, 100%, 73%); }
+        .product-card { background-color: #121212; border: 1px solid #262626; transition: all 0.2s ease-in-out; }
+        .product-card:hover { transform: translateY(-4px); background-color: #1a1a1a; border-color: #353534; }
+        .price { color: #f59e0b; }
+        .emerald-bg { background-color: #10b981; color: #000000; }
+        .emerald-border-focus:focus-within { border-color: #10b981; }
+        
+        .pulse-dot {
+            width: 8px; height: 8px; background-color: #10b981; border-radius: 50%; display: inline-block;
+            box-shadow: 0 0 0 rgba(16, 185, 129, 0.4); animation: pulse 2s infinite; margin-right: 8px;
+        }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
+        
+        .skeleton { animation: skeleton-loading 1s linear infinite alternate; }
+        @keyframes skeleton-loading { 0% { background-color: #1c1b1b; } 100% { background-color: #2a2a2a; } }
+        
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    </style>
+</head>
+<body class="font-body-md text-body-md antialiased min-h-screen flex flex-col">
+
+<header class="bg-surface text-primary fixed top-0 w-full z-50 border-b border-outline-variant">
+    <div class="flex justify-between items-center h-16 px-margin-desktop max-w-container-max mx-auto w-full">
+        <div class="font-display-lg text-2xl font-bold text-primary tracking-tighter hidden md:block">Catalog</div>
+        <div class="font-headline-sm text-xl font-bold text-primary tracking-tighter md:hidden">Catalog</div>
+        <div class="flex items-center space-x-6">
+            <div class="hidden md:flex space-x-6 text-sm text-on-surface-variant font-medium">
+                <span id="header-total-count">Total: 0</span>
+                <span id="header-loaded-count">Loaded: 0</span>
+                <span id="header-query-time">Query: 0ms</span>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button id="simulate-btn" class="border border-secondary text-secondary px-3 py-1 rounded text-xs hover:bg-secondary hover:text-black transition">
+                    + Simulate 50
+                </button>
+                <button id="reset-btn" class="border border-[#ffb4ab] text-[#ffb4ab] px-3 py-1 rounded text-xs hover:bg-[#ffb4ab] hover:text-black transition">
+                    Reset
+                </button>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="flex flex-1 pt-16">
+    <aside class="hidden lg:flex flex-col fixed left-0 top-16 bottom-0 z-40 bg-surface-dim h-full w-64 border-r border-outline-variant text-sm">
+        <div class="p-6 border-b border-outline-variant">
+            <h2 class="text-xl font-bold text-primary mb-1">Product Gallery</h2>
+            <p class="text-on-surface-variant text-xs font-semibold tracking-wider uppercase">Premium Inventory</p>
+        </div>
+        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+            <a class="flex items-center space-x-3 px-4 py-3 text-secondary bg-surface-container-highest rounded-lg transition-all" href="#">
+                <span class="material-symbols-outlined" data-icon="grid_view">grid_view</span>
+                <span>All Products</span>
+            </a>
+        </nav>
+        <div class="p-6 border-t border-outline-variant">
+            <div class="flex items-center text-xs font-semibold text-on-surface-variant">
+                <span class="pulse-dot"></span>
+                Cursor Pagination Active
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 lg:ml-64 p-margin-mobile md:p-margin-desktop max-w-container-max mx-auto w-full">
+        
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 space-y-4 md:space-y-0">
+            <div class="flex items-center space-x-4 w-full md:w-auto">
+                <div class="relative w-full md:w-64 emerald-border-focus bg-surface-dim border border-outline-variant rounded p-2 flex items-center">
+                    <select id="category-filter" class="bg-surface-dim text-primary outline-none w-full appearance-none pr-8 text-sm cursor-pointer border-none focus:ring-0">
+                        <option value="">All Categories</option>
+                    </select>
+                    <span class="material-symbols-outlined absolute right-3 pointer-events-none text-on-surface-variant">expand_more</span>
+                </div>
+            </div>
+            <div class="flex items-center lg:hidden text-xs font-semibold text-on-surface-variant bg-surface-container-low px-3 py-1.5 rounded-full border border-outline-variant">
+                <span class="pulse-dot"></span> Cursor Pagination Active
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-gutter" id="product-grid">
+            <!-- Products will be injected here -->
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-gutter mt-gutter hidden" id="skeleton-grid">
+            <!-- Skeletons generated by JS -->
+        </div>
+
+        <div class="mt-12 flex justify-center pb-12" id="load-more-container">
+            <button id="load-more-btn" class="emerald-bg text-sm font-semibold px-8 py-3 rounded-md hover:opacity-90 transition-opacity flex items-center space-x-2">
+                <span>Load More</span>
+                <span class="material-symbols-outlined">arrow_downward</span>
+            </button>
+        </div>
+        
+        <div id="end-message" class="text-center text-on-surface-variant text-sm mt-12 pb-12 hidden">
+            You've reached the end of the catalog.
+        </div>
+    </main>
+</div>
+
+<script>
+    // Automatically use the Render backend URL if deployed to Vercel
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const API_BASE = isLocalhost ? window.location.origin : 'https://YOUR_BACKEND_URL.onrender.com';
+    const LIMIT = 24;
+
+    const state = {
+        products: [],
+        loading: false,
+        hasNext: true,
+        currentCursor: null,
+        currentCategory: ''
+    };
+
+    const gridEl = document.getElementById('product-grid');
+    const skeletonEl = document.getElementById('skeleton-grid');
+    const loadBtn = document.getElementById('load-more-btn');
+    const loadMoreContainer = document.getElementById('load-more-container');
+    const endMessage = document.getElementById('end-message');
+    const categoryFilter = document.getElementById('category-filter');
+    const headerTotalCount = document.getElementById('header-total-count');
+    const headerLoadedCount = document.getElementById('header-loaded-count');
+    const headerQueryTime = document.getElementById('header-query-time');
+
+    // Init
+    async function init() {
+        try {
+            const res = await fetch(`${API_BASE}/products/categories`);
+            const data = await res.json();
+            data.categories.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.textContent = cat;
+                categoryFilter.appendChild(opt);
+            });
+
+            const healthRes = await fetch(`${API_BASE}/health`);
+            const healthData = await healthRes.json();
+            headerTotalCount.textContent = `Total: ${healthData.total_products.toLocaleString()}`;
+        } catch (e) { console.error('Init error', e); }
+
+        renderSkeletons();
+        fetchProducts(false);
+    }
+
+    const createCardHTML = (p) => {
+        const dateStr = new Date(p.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        return `
+        <div class="product-card rounded flex flex-col h-full group overflow-hidden">
+            <div class="aspect-[4/3] bg-surface-dim relative overflow-hidden flex items-center justify-center border-b border-outline-variant">
+                <span class="material-symbols-outlined text-6xl text-outline-variant opacity-30">inventory_2</span>
+                <div class="absolute top-3 left-3 bg-surface-container-high px-2 py-1 text-xs font-semibold rounded uppercase tracking-widest text-primary border border-outline-variant">
+                    ${p.category}
+                </div>
+            </div>
+            <div class="p-4 flex flex-col flex-1">
+                <div class="flex justify-between items-start mb-2">
+                    <h3 class="text-base font-bold text-primary pr-4 line-clamp-2">${p.name}</h3>
+                    <span class="text-lg font-bold price tracking-tight">$${parseFloat(p.price).toFixed(2)}</span>
+                </div>
+                <p class="text-on-surface-variant text-sm mb-6 line-clamp-2 flex-1">${p.description}</p>
+                <div class="flex justify-between items-center text-xs font-semibold text-on-surface-variant pt-4 border-t border-outline-variant">
+                    <span>#${p.id}</span>
+                    <span>${dateStr}</span>
+                </div>
+            </div>
+        </div>
+    `};
+
+    const renderSkeletons = () => {
+        skeletonEl.innerHTML = Array(4).fill(0).map(() => `
+            <div class="product-card rounded h-[380px] flex flex-col">
+                <div class="h-48 skeleton"></div>
+                <div class="p-4 flex flex-col gap-4">
+                    <div class="h-6 skeleton w-3/4 rounded"></div>
+                    <div class="h-4 skeleton w-full rounded"></div>
+                    <div class="h-4 skeleton w-5/6 rounded"></div>
+                    <div class="mt-auto h-4 skeleton w-1/3 rounded"></div>
+                </div>
+            </div>
+        `).join('');
+    };
+
+    const fetchProducts = async (append = true) => {
+        if (state.loading) return;
+        state.loading = true;
+        
+        if (!append) {
+            gridEl.innerHTML = '';
+            state.products = [];
+            state.currentCursor = null;
+        }
+
+        skeletonEl.classList.remove('hidden');
+        loadBtn.disabled = true;
+        loadBtn.classList.add('opacity-50');
+
+        try {
+            const params = new URLSearchParams({ limit: LIMIT });
+            if (state.currentCategory) params.set('category', state.currentCategory);
+            if (state.currentCursor) params.set('cursor', state.currentCursor);
+
+            const res = await fetch(`${API_BASE}/products?${params}`);
+            const json = await res.json();
+            
+            if (!res.ok) throw new Error('API Error');
+
+            const { data, pagination, meta } = json;
+            state.products = [...state.products, ...data];
+            state.hasNext = pagination.has_next;
+            state.currentCursor = pagination.next_cursor || null;
+
+            gridEl.insertAdjacentHTML('beforeend', data.map(createCardHTML).join(''));
+
+            headerLoadedCount.textContent = `Loaded: ${state.products.length.toLocaleString()}`;
+            headerQueryTime.textContent = `Query: ${meta.query_time_ms}ms`;
+
+            if (state.hasNext) {
+                loadMoreContainer.classList.remove('hidden');
+                endMessage.classList.add('hidden');
+            } else {
+                loadMoreContainer.classList.add('hidden');
+                endMessage.classList.remove('hidden');
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            state.loading = false;
+            skeletonEl.classList.add('hidden');
+            loadBtn.disabled = false;
+            loadBtn.classList.remove('opacity-50');
+        }
+    };
+
+    categoryFilter.addEventListener('change', (e) => {
+        state.currentCategory = e.target.value;
+        fetchProducts(false);
+    });
+
+    loadBtn.addEventListener('click', () => fetchProducts(true));
+
+    const simulateBtn = document.getElementById('simulate-btn');
+    if(simulateBtn) {
+        simulateBtn.addEventListener('click', async () => {
+            if (simulateBtn.disabled) return;
+            simulateBtn.disabled = true;
+            simulateBtn.textContent = 'Injecting...';
+            try {
+                await fetch(`${API_BASE}/products/simulate`, { method: 'POST' });
+                const healthRes = await fetch(`${API_BASE}/health`);
+                const healthData = await healthRes.json();
+                headerTotalCount.textContent = `Total: ${healthData.total_products.toLocaleString()}`;
+                simulateBtn.textContent = 'Success!';
+                setTimeout(() => { simulateBtn.textContent = '+ Simulate 50'; simulateBtn.disabled = false; }, 2000);
+            } catch (e) {
+                simulateBtn.textContent = 'Error';
+                setTimeout(() => { simulateBtn.textContent = '+ Simulate 50'; simulateBtn.disabled = false; }, 2000);
+            }
+        });
+    }
+
+    const resetBtn = document.getElementById('reset-btn');
+    if(resetBtn) {
+        resetBtn.addEventListener('click', async () => {
+            if (resetBtn.disabled) return;
+            resetBtn.disabled = true;
+            resetBtn.textContent = 'Deleting...';
+            try {
+                await fetch(`${API_BASE}/products/simulate`, { method: 'DELETE' });
+                const healthRes = await fetch(`${API_BASE}/health`);
+                const healthData = await healthRes.json();
+                headerTotalCount.textContent = `Total: ${healthData.total_products.toLocaleString()}`;
+                resetBtn.textContent = 'Deleted!';
+                fetchProducts(false); // reload grid
+                setTimeout(() => { resetBtn.textContent = 'Reset'; resetBtn.disabled = false; }, 2000);
+            } catch (e) {
+                resetBtn.textContent = 'Error';
+                setTimeout(() => { resetBtn.textContent = 'Reset'; resetBtn.disabled = false; }, 2000);
+            }
+        });
+    }
+
+    init();
+</script>
+</body></html>

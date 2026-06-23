@@ -1,0 +1,24 @@
+{
+  "name": "codevector-products-api",
+  "version": "1.0.0",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "migrate": "node scripts/migrate.js",
+    "seed": "node scripts/seed.js"
+  },
+  "keywords": ["pagination", "cursor", "api"],
+  "author": "",
+  "license": "ISC",
+  "description": "Product Listing API with cursor-based pagination for 200k+ products",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "pg": "^8.22.0"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^10.5.0"
+  }
+}
