@@ -5,8 +5,6 @@ const cors = require('cors');
 const path = require('path');
 const pool = require('./db');
 const productsRouter = require('./routes/products');
-const { DESTRUCTION } = require('dns');
-const { decapsulate } = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
